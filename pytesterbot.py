@@ -46,7 +46,7 @@ class RedditBot:
         for submission in subreddit:
             #print(submission.title)
             if submission.score > 200:
-                #print("found post.")
+                print("found post.")
                 author = submission.author.name
                 id = submission.author.id
                 new_post = Post(author, submission.subreddit.name, submission.id, {})
@@ -62,6 +62,17 @@ class RedditBot:
             print(id, ":", user.get_name())
         print("Finished.")
 
+    def dump_to_csv(self):
+        with open('raw_data.csv', 'w') as file:
+            header = "user, user_id, subreddit, post_id \n"
+            file.write(header)
+            for user in self._users.values():
+                for post in user.get_posts().values():
+                    print(user.get_name())
+                    file.write(user.get_name() + ",")
+                    file.write(user.get_id() + ",")
+                    file.write(post.subreddit + ",")
+                    file.write(post.id + "\n")
 
 
 class Post:
@@ -94,8 +105,11 @@ class User:
     def get_id(self) -> str:
         return self._id
 
+    def get_posts(self) -> dict:
+        return self._posts
+
 
 
 py_bot = RedditBot()
 py_bot.get_posts('wallstreetbets')
-#py_bot.refresh_credentials()
+py_bot.dump_to_csv()
