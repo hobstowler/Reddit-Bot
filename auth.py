@@ -1,3 +1,7 @@
+# Author: Hobs Towler
+# Date: 2/4/2022
+# Description: Provides methods for getting refresh token using Praw API.
+
 import praw as pr
 import socket
 import sys
@@ -6,6 +10,15 @@ import webbrowser
 
 
 def get_refresh_token(cid, secret, scopes=None):
+    """
+    Gets a refresh token with provided client Id and Client Secret. Will launch web browser and read data from browser.
+    Args:
+        cid ([type]): Client ID
+        secret ([type]): Client Secret
+        scopes ([type], optional): Authorization scopes for instance of Reddit. If None/default, uses 'identity' and 'read' scopes.
+
+    Returns: None
+    """
     if scopes is None:
         scopes = ['identity','read']
 
@@ -19,7 +32,7 @@ def get_refresh_token(cid, secret, scopes=None):
     state = str(random.randint(0, 65000))
     auth_url = reddit.auth.url(scopes, state, "permanent")
     webbrowser.open(auth_url)
-    print("open this in your browser:", auth_url)
+    #print("open this in your browser:", auth_url)
 
     client = receive_connection()
     data = client.recv(1024).decode('utf-8')
@@ -44,6 +57,10 @@ def get_refresh_token(cid, secret, scopes=None):
     return refresh_token
 
 def receive_connection():
+    """
+    Opens a connection to listen on localhost:8080
+    Returns: client
+    """
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
     server.bind(('localhost', 8080))

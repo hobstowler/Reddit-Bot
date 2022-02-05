@@ -25,7 +25,7 @@ class KeyWordAnalyzer:
         self._threshold = threshold
 
     def extract_comments_from_post(self, post_url: str):
-        self._bot.get_comments('https://old.reddit.com/r/Virginia/comments/skdtww/glenn_youngkin_set_up_a_tip_line_to_snitch_on/')
+        self._bot.get_comments(post_url)
 
 keybot = KeyWordAnalyzer()
-keybot.extract_comments_from_post(None)
+keybot.extract_comments_from_post('https://old.reddit.com/r/Virginia/comments/skdtww/glenn_youngkin_set_up_a_tip_line_to_snitch_on/')
