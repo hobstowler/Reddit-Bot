@@ -9,8 +9,9 @@ class KeyWordAnalyzer:
 
     def load_lists(self):
         # load keywords
-        # load exceptions
+        # load keyword exceptions
         # load special words
+        # load special word exceptions
         pass
 
     def save_keywords(self):
@@ -24,8 +25,14 @@ class KeyWordAnalyzer:
         """
         self._threshold = threshold
 
-    def extract_comments_from_post(self, post_url: str):
-        self._bot.get_comments(post_url)
+    def get_post_from_url(self, post_url: str):
+        self._bot.get_posts(post_url)
+
+    def get_stickied_posts_from_subreddit(self, subreddit: str, number:int=2):
+        posts = self._bot.get_posts(subreddit='wallstreetbets', stickied=number)
+        for post in posts:
+            print(post.title)
 
 keybot = KeyWordAnalyzer()
-keybot.extract_comments_from_post('https://old.reddit.com/r/Virginia/comments/skdtww/glenn_youngkin_set_up_a_tip_line_to_snitch_on/')
+#keybot.extract_comments_from_post('https://old.reddit.com/r/Virginia/comments/skdtww/glenn_youngkin_set_up_a_tip_line_to_snitch_on/')
+keybot.get_stickied_posts_from_subreddit('wallstreetbets')

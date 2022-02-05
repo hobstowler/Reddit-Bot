@@ -1,16 +1,19 @@
 from platform import python_branch
 from os.path import exists
 import auth
-import praw
+import praw, prawcore
 import json
 import pickle
 
 class RedditBot:
+    """A generic reddit bot to pull posts and comments"""
     def __init__(self, credentials_file:str=None, data_file:str=None) -> None:
-        self._default_save_file = 'data.p'
         self._users = {}
         if credentials_file is None:
             credentials_file = "credentials.txt"
+        if data_file is None:
+            data_file = 'data.p'
+        self._data_file = data_file
 
         with open(credentials_file, 'r') as file:
             credentials = json.load(file)
@@ -20,11 +23,11 @@ class RedditBot:
             self._refresh_token = credentials.get('refresh_token')
 
         # handle default better
-        self._data = self.load_data(data_file)
-        if self._data is not None:
-            self._users = self._data.get('users')
-            print("loaded users")
-        
+        if exists(self._data_file):
+            self._data = self.load_data(self._data_file)
+            if self._data is not None:
+                self._users = self._data.get('users')
+                print("loaded users")
 
     def refresh_credentials(self) -> None:
         credentials = {}
@@ -48,33 +51,42 @@ class RedditBot:
             user_agent = agent_text
         )
 
-    def get_posts(self, subreddit_name: str, number: int = 25) -> list:
+    def get_posts(self, subreddit:str='all', post_url:str=None, stickied:int=0, number:int=25) -> list:
         reddit = self.get_reddit('test getting posts by u/pytesterbot')
-        subreddit = reddit.subreddit('all').top('hour', limit=number)
+        posts = []
+        if post_url is not None:
+            posts.append(reddit.submission(url=post_url))
+        elif subreddit != 'all' and stickied > 0:
+            print("yah")
+            for i in range(1, stickied+1):
+                try:
+                    posts.append(reddit.subreddit(subreddit).sticky(i))
+                except prawcore.NotFound:
+                    print("Could not find sticked post #", i)
+        else:
+            for submission in subreddit:
+                if submission.score > 100:
+                    author = submission.author.name
+                    id = submission.author.id
+                    new_post = Post(author, submission.subreddit.name, submission.id, {})
 
-        for submission in subreddit:
-            if submission.score > 100:
-                author = submission.author.name
-                id = submission.author.id
-                new_post = Post(author, submission.subreddit.name, submission.id, {})
-
-                if id not in self._users:
-                    new_user = User(author, id)
-                    new_user.add_post(new_post)
-                    self._users.update({id: new_user})
-                else:
-                    self._users.get(id).add_post(new_post)
+                    if id not in self._users:
+                        new_user = User(author, id)
+                        new_user.add_post(new_post)
+                        self._users.update({id: new_user})
+                    else:
+                        self._users.get(id).add_post(new_post)
         
-        print("Finished.")
+        return posts
 
-    def get_comments(self, post_url: str):
-        reddit = self.get_reddit('test getting comments by u/pytesterbot')
-        post = reddit.submission(url=post_url)
-        print("success?", post.title)
-    
     def save_data(self, filename: str = None):
+        """[summary]
+
+        Args:
+            filename (str, optional): [description]. Defaults to None.
+        """
         if filename is None:
-            filename = self._default_save_file
+            filename = self._data_file
         print(filename)
         data = {
             'users': self._users,
@@ -85,14 +97,24 @@ class RedditBot:
 
 
     def load_data(self, filename: str = None):
+        """[summary]
+
+        Args:
+            filename (str, optional): [description]. Defaults to None.
+
+        Returns:
+            [type]: [description]
+        """
         if filename is None:
-            filename = self._default_save_file
+            filename = self._data_file
         if exists(filename):
             with open(filename, 'rb') as infile:
                 return pickle.load(infile)
 
+    def dump_to_csv(self, file_name: str = None):
+        """
 
-    def dump_to_csv(self):
+        """
         with open('raw_data.csv', 'w') as file:
             print("writing to csv")
             header = "username, user_id, # posts, subreddit, post_id \n"
@@ -119,6 +141,9 @@ class Post:
 
 
 class Comment:
+    """
+    Class representing a comment on Reddit.
+    """
     def __init__(self) -> None:
         pass
 
