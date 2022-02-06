@@ -199,21 +199,43 @@ class User:
     Class representing a Reddit User.
     """
     def __init__(self, username, id) -> None:
+        """
+        Initializes the User with a name and id.
+        :param username: The user's name from Reddit.
+        :param id: Reddit-assigned ID. Assumed unique?
+        """
         self._username = username
         self._id = id
         self._posts = {}
 
     def add_post(self, post: Post) -> None:
+        """
+        Adds a post to the user. User here is the author of the post.
+        :param post: A post from Reddit.
+        :return: Nothing.
+        """
         if post.id not in self._posts:
             self._posts.update({post.id: post})
     
     def get_name(self) -> str:
+        """
+        Returns the user's name.
+        :return: Username as string.
+        """
         return self._username
 
     def get_id(self) -> str:
+        """
+        Returns the user's ID.
+        :return: ID as string.
+        """
         return self._id
 
     def get_posts(self) -> dict:
+        """
+        Returns the user's posts. The post's reddit-assigned ID will be the key and Post object is the value.
+        :return: A dictionary object containing the user's posts.
+        """
         return self._posts
 
 
