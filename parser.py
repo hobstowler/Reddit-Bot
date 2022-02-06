@@ -21,7 +21,7 @@ class KeyWordAnalyzer:
 
     def load_lists(self, filename:str = None):
         if filename is None:
-            filename = "keyword_data\\keydata.p"
+            filename = "keyword data\\keydata.p"
         if exists(filename):
             return pickle.load(open(filename, "rb"))
         return None

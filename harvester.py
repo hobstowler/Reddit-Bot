@@ -10,8 +10,15 @@ import json
 import pickle
 
 class RedditBot:
-    """A generic reddit bot to pull posts and comments"""
-    def __init__(self, credentials_file:str=None, data_file:str=None) -> None:
+    """
+    A generic reddit bot to pull posts and comments
+    """
+    def __init__(self, credentials_file: str = None, data_file: str = None) -> None:
+        """
+        Initializes the Reddit Bot.
+        :param credentials_file: file containing credentials to connect to Reddit's API
+        :param data_file: file containing data from previous runs.
+        """
         self._users = {}
         if credentials_file is None:
             credentials_file = "credentials.txt"
@@ -26,7 +33,6 @@ class RedditBot:
             self._secret = credentials.get('secret')
             self._refresh_token = credentials.get('refresh_token')
 
-        # handle default better
         if exists(self._data_file):
             self._data = self.load_data(self._data_file)
             if self._data is not None:
@@ -34,6 +40,10 @@ class RedditBot:
                 print("loaded users")
 
     def refresh_credentials(self) -> None:
+        """
+        To be used later. Will update credentials file if tokens change. Need to detect the change.
+        :return: Nothing.
+        """
         credentials = {}
         if self._client_id is not None:
             credentials.update({'client_id': self._client_id})
@@ -46,28 +56,52 @@ class RedditBot:
             json.dump(credentials, file)
         
     def refresh_auth_token(self) -> None:
-        return auth.get_refresh_token(self._client_id, self._secret)
+        """
+        Gets a new refresh token.
+        :return: Nothing.
+        """
+        self._refresh_token = auth.get_refresh_token(self._client_id, self._secret)
+        self.refresh_credentials()
 
-    def get_reddit(self, agent_text:str) -> praw.Reddit:
+    def get_reddit(self, agent_text: str) -> praw.Reddit:
+        """
+        Gets an instance of a Reddit object.
+        :param agent_text: Text of the user agent to be sent in the request.
+        :return: The Reddit object.
+        """
         return praw.Reddit(
             client_id = self._client_id,
             client_secret = self._secret,
             user_agent = agent_text
         )
 
-    def get_posts(self, subreddit:str='all', post_url:str=None, stickied:int=0, number:int=25) -> list:
+    def get_posts(self, subreddit_name: str = 'all',
+                  post_url: str = None,
+                  stickied: int = 0,
+                  number: int = 25,
+                  timeframe: str = 'hour') -> list:
+        """
+        Returns a post from Reddit. Optional parameters can be used to pull a specific post, stickied posts in a
+        certain subreddit, or a specific number of posts.
+        :param subreddit_name: The name of the subreddit to pull a post from.
+        :param post_url: The url of a specific post.
+        :param stickied: The number of stickied posts to pull from a specified subreddit.
+        :param number: The number of non-stickied posts to pull from a subreddit.
+        :return: A post from Reddit.
+        """
         reddit = self.get_reddit('test getting posts by u/pytesterbot')
         posts = []
         if post_url is not None:
             posts.append(reddit.submission(url=post_url))
-        elif subreddit != 'all' and stickied > 0:
+        elif subreddit_name != 'all' and stickied > 0:
             print("yah")
             for i in range(1, stickied+1):
                 try:
-                    posts.append(reddit.subreddit(subreddit).sticky(i))
+                    posts.append(reddit.subreddit(subreddit_name).sticky(i))
                 except prawcore.NotFound:
                     print("Could not find sticked post #", i)
         else:
+            subreddit = reddit.subreddit(subreddit_name).top(timeframe, limit=number)
             for submission in subreddit:
                 if submission.score > 100:
                     author = submission.author.name
@@ -83,11 +117,11 @@ class RedditBot:
         
         return posts
 
-    def save_data(self, filename: str = None):
-        """[summary]
-
-        Args:
-            filename (str, optional): [description]. Defaults to None.
+    def save_data(self, filename: str = None) -> None:
+        """
+        Pickles data to a specified file. Will overwrite existing file.
+        :param filename: The file name.
+        :return: Nothing.
         """
         if filename is None:
             filename = self._data_file
@@ -100,14 +134,11 @@ class RedditBot:
             pickle.dump(data, outfile)
 
 
-    def load_data(self, filename: str = None):
-        """[summary]
-
-        Args:
-            filename (str, optional): [description]. Defaults to None.
-
-        Returns:
-            [type]: [description]
+    def load_data(self, filename: str = None) -> None:
+        """
+        Loads data from a specified file.
+        :param filename: The file name.
+        :return: Nothing.
         """
         if filename is None:
             filename = self._data_file
@@ -115,11 +146,15 @@ class RedditBot:
             with open(filename, 'rb') as infile:
                 return pickle.load(infile)
 
-    def dump_to_csv(self, file_name: str = None):
+    def dump_to_csv(self, file_name: str = None) -> None:
         """
-
+        Writes collected users and posts to a .csv file.
+        :param file_name: The file name.
+        :return: Nothing.
         """
-        with open('raw_data.csv', 'w') as file:
+        if file_name is None:
+            file_name = 'raw_data.csv'
+        with open(file_name, 'w') as file:
             print("writing to csv")
             header = "username, user_id, # posts, subreddit, post_id \n"
             file.write(header)
@@ -138,6 +173,13 @@ class Post:
     Class representing a post on Reddit.
     """
     def __init__(self, author, subreddit, id, stats: dict) -> None:
+        """
+        Initializes a Post class.
+        :param author: Author of the post on Reddit.
+        :param subreddit: The subreddit posted to.
+        :param id: The id of the post.
+        :param stats: additional post information as a dictionary object.
+        """
         self.author = author
         self.subreddit = subreddit
         self.id = id
