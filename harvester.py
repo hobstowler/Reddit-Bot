@@ -34,10 +34,13 @@ class RedditBot:
             self._refresh_token = credentials.get('refresh_token')
 
         if exists(self._data_file):
-            self._data = self.load_data(self._data_file)
-            if self._data is not None:
-                self._users = self._data.get('users')
-                print("loaded users")
+            try:
+                self._data = self.load_data(self._data_file)
+                if self._data is not None:
+                    self._users = self._data.get('users')
+                    print("loaded users")
+            except FileNotFoundError:
+                print("no data file found.")
 
     def refresh_credentials(self) -> None:
         """
@@ -143,8 +146,11 @@ class RedditBot:
         if filename is None:
             filename = self._data_file
         if exists(filename):
-            with open(filename, 'rb') as infile:
-                return pickle.load(infile)
+            try:
+                with open(filename, 'rb') as infile:
+                    return pickle.load(infile)
+            except FileNotFoundError:
+                print("no file.")
 
     def dump_to_csv(self, file_name: str = None) -> None:
         """

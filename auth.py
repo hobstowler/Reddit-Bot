@@ -74,4 +74,5 @@ def send_message(client, message):
     client.close()
     
 if __name__ == "__main__":
-    get_refresh_token()
+    #get_refresh_token()
+    pass
