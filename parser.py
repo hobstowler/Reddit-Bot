@@ -1,4 +1,9 @@
+# Author: Hobs Towler
+# Date: 2/4/2022
+# Description:
+
 from harvester import *
+import pickle
 
 
 class KeyWordAnalyzer:
@@ -6,13 +11,20 @@ class KeyWordAnalyzer:
         self._bot = RedditBot()
         self._threshold = self.set_threshold()
         keyword_lists = self.load_lists()
+        if keyword_lists is None:
+            keyword_lists = {
+                'keywords': set(),
+                'keywords_except': set(),
+                'special_words': set(),
+                'special_except': set()
+            }
 
-    def load_lists(self):
-        # load keywords
-        # load keyword exceptions
-        # load special words
-        # load special word exceptions
-        pass
+    def load_lists(self, filename:str = None):
+        if filename is None:
+            filename = "keyword_data\\keydata.p"
+        if exists(filename):
+            return pickle.load(open(filename, "rb"))
+        return None
 
     def save_keywords(self):
         pass
