@@ -56,7 +56,7 @@ class KeyWordAnalyzer:
         self._bot.get_posts(post_url)
 
     def get_stickied_posts_from_subreddit(self, subreddit: str, number: int = 2):
-        posts = self._bot.get_posts(subreddit='wallstreetbets', stickied=number)
+        posts = self._bot.get_posts(subreddit_name='wallstreetbets', stickied=number)
         for post in posts:
             print(post.title)
 

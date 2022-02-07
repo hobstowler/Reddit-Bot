@@ -21,49 +21,56 @@ class RedditBot:
         """
         self._users = {}
         if credentials_file is None:
-            credentials_file = "credentials.txt"
+            credentials_file = "credentials\\credentials.txt"
         if data_file is None:
-            data_file = 'data.p'
+            data_file = 'data\\data.p'
         self._data_file = data_file
+        self._credentials_file = credentials_file
+        self._credentials = {}
 
-        with open(credentials_file, 'r') as file:
-            credentials = json.load(file)
-            self._credentials = credentials
-            self._client_id = credentials.get('client_id')
-            self._secret = credentials.get('secret')
-            self._refresh_token = credentials.get('refresh_token')
+        try:
+            with open(self._credentials_file, 'r') as file:
+                self._credentials = json.load(file)
+        except FileNotFoundError:
+            print("No credentials found. Creating new file...")
+            open(self._credentials_file, 'w')
+            self.prompt_credentials()
 
-        if exists(self._data_file):
-            try:
-                self._data = self.load_data(self._data_file)
-                if self._data is not None:
-                    self._users = self._data.get('users')
-                    print("loaded users")
-            except FileNotFoundError:
-                print("no data file found.")
+        try:
+            self._data = self.load_data(self._data_file)
+            if self._data is not None:
+                self._users = self._data.get('users')
+                print("loaded users")
+        except FileNotFoundError:
+            print("No data file found. Creating new file...")
+            open(self._data_file, 'w')
+
+        print(type(self._users))
+        for user in self._users.values():
+            print(user.get_name())
 
     def refresh_credentials(self) -> None:
         """
         To be used later. Will update credentials file if tokens change. Need to detect the change.
         :return: Nothing.
         """
-        credentials = {}
-        if self._client_id is not None:
-            credentials.update({'client_id': self._client_id})
-        if self._secret is not None:
-            credentials.update({'secret': self._secret})
-        if self._refresh_token is not None:
-            credentials.update({'refresh_token': self._refresh_token})
-
         with open(self._credentials_file, 'w') as file:
-            json.dump(credentials, file)
+            json.dump(self._credentials, file)
+
+    def prompt_credentials(self):
+        client_id = input("Enter a client ID:")
+        client_secret = input("Enter client secret:")
+        print("Launching web page to get token...")
+        self.refresh_auth_token(client_id, client_secret)
         
-    def refresh_auth_token(self) -> None:
+    def refresh_auth_token(self, client_id, client_secret) -> None:
         """
         Gets a new refresh token.
         :return: Nothing.
         """
-        self._refresh_token = auth.get_refresh_token(self._client_id, self._secret)
+        self._credentials.update({'client_id': client_id})
+        self._credentials.update({'secret': client_secret})
+        self._credentials.update({'refresh_token': auth.get_refresh_token(client_id, client_secret)})
         self.refresh_credentials()
 
     def get_reddit(self, agent_text: str) -> praw.Reddit:
@@ -73,19 +80,20 @@ class RedditBot:
         :return: The Reddit object.
         """
         return praw.Reddit(
-            client_id = self._client_id,
-            client_secret = self._secret,
-            user_agent = agent_text
+            client_id=self._credentials.get('client_id'),
+            client_secret=self._credentials.get('secret'),
+            user_agent=agent_text
         )
 
     def get_posts(self, subreddit_name: str = 'all',
                   post_url: str = None,
                   stickied: int = 0,
-                  number: int = 25,
+                  number: int = 100,
                   timeframe: str = 'hour') -> list:
         """
         Returns a post from Reddit. Optional parameters can be used to pull a specific post, stickied posts in a
         certain subreddit, or a specific number of posts.
+        :param timeframe: The time frame for submissions.
         :param subreddit_name: The name of the subreddit to pull a post from.
         :param post_url: The url of a specific post.
         :param stickied: The number of stickied posts to pull from a specified subreddit.
@@ -106,7 +114,7 @@ class RedditBot:
         else:
             subreddit = reddit.subreddit(subreddit_name).top(timeframe, limit=number)
             for submission in subreddit:
-                if submission.score > 100:
+                if submission.score >= 100:
                     author = submission.author.name
                     id = submission.author.id
                     new_post = Post(author, submission.subreddit.name, submission.id, {})
@@ -246,11 +254,10 @@ class User:
 
 
 def main():
+    print("starting")
     py_bot = RedditBot()
-    py_bot.get_posts('wallstreetbets')
-    py_bot.save_data()
-    py_bot.dump_to_csv()
-    py_bot.get_posts('politics')
+    py_bot.get_posts(subreddit_name='wallstreetbets')
+    py_bot.get_posts(subreddit_name='politics')
     py_bot.save_data()
     py_bot.dump_to_csv()
 
