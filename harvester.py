@@ -136,7 +136,6 @@ class RedditBot:
         """
         if filename is None:
             filename = self._data_file
-        print(filename)
         data = {
             'users': self._users,
             'credentials': self._credentials
