@@ -6,9 +6,9 @@ from harvester import *
 import pickle
 
 
-class KeyWordAnalyzer:
+class KeyWordAnalyzer(RedditBot):
     def __init__(self) -> None:
-        self._bot = RedditBot()
+        super().__init__()
         self.set_threshold(5)
         self._keyword_lists = self.load_keyword_lists()
         if self._keyword_lists is None:
@@ -36,7 +36,7 @@ class KeyWordAnalyzer:
         return None
 
     # TODO handle more intelligently
-    def save_keywords(self, filename: str = None):
+    def save_keyword_lists(self, filename: str = None):
         if filename is None:
             filename = "keyword data\\keydata.p"
         with open(filename, 'wb') as outfile:
@@ -85,7 +85,7 @@ class KeyWordAnalyzer:
             return
         for word in word_list:
             self.create_keyword(word, keyword_type)
-        self.save_keywords()
+        self.save_keyword_lists()
 
     def training_montage(self, keyword_type: str = 'keyword'):
         keyword = None
@@ -93,7 +93,7 @@ class KeyWordAnalyzer:
             if keyword is not None:
                 self.create_keyword(keyword, keyword_type)
             keyword = input(f"Teach me a new {keyword_type}")
-        self.save_keywords()
+        self.save_keyword_lists()
 
     def regurgitate(self, keyword_type: str = 'keyword'):
         if keyword_type not in self._keyword_lists:
@@ -102,11 +102,12 @@ class KeyWordAnalyzer:
             print(word, end=", ")
         print()
 
+    # TODO remove?
     def get_post_from_url(self, post_url: str):
-        self._bot.get_posts(post_url)
+        self.get_posts(post_url)
 
     def get_stickied_posts_from_subreddit(self, subreddit: str, number: int = 2):
-        posts = self._bot.get_posts(subreddit_name='wallstreetbets', stickied=number)
+        posts = self.get_posts(subreddit_name='wallstreetbets', stickied=number)
         for post in posts:
             print(post.title)
 
@@ -115,7 +116,7 @@ class KeyWordAnalyzer:
 
 keybot = KeyWordAnalyzer()
 #keybot.extract_comments_from_post('https://old.reddit.com/r/Virginia/comments/skdtww/glenn_youngkin_set_up_a_tip_line_to_snitch_on/')
-#keybot.get_stickied_posts_from_subreddit('wallstreetbets')
+keybot.get_stickied_posts_from_subreddit('wallstreetbets')
 #keybot.training_montage()
 keybot.regurgitate()
 #keybot.save_keywords()

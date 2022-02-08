@@ -40,14 +40,10 @@ class RedditBot:
             self._data = self.load_data(self._data_file)
             if self._data is not None:
                 self._users = self._data.get('users')
-                print("loaded users")
+                print("Loaded users.")
         except FileNotFoundError:
             print("No data file found. Creating new file...")
             open(self._data_file, 'w')
-
-        print(type(self._users))
-        for user in self._users.values():
-            print(user.get_name())
 
     def refresh_credentials(self) -> None:
         """
@@ -89,7 +85,8 @@ class RedditBot:
                   post_url: str = None,
                   stickied: int = 0,
                   number: int = 100,
-                  timeframe: str = 'hour') -> list:
+                  timeframe: str = 'hour',
+                  score: int = 100) -> list:
         """
         Returns a post from Reddit. Optional parameters can be used to pull a specific post, stickied posts in a
         certain subreddit, or a specific number of posts.
@@ -105,7 +102,6 @@ class RedditBot:
         if post_url is not None:
             posts.append(reddit.submission(url=post_url))
         elif subreddit_name != 'all' and stickied > 0:
-            print("yah")
             for i in range(1, stickied+1):
                 try:
                     posts.append(reddit.subreddit(subreddit_name).sticky(i))
@@ -114,7 +110,7 @@ class RedditBot:
         else:
             subreddit = reddit.subreddit(subreddit_name).top(timeframe, limit=number)
             for submission in subreddit:
-                if submission.score >= 100:
+                if submission.score >= score:
                     author = submission.author.name
                     id = submission.author.id
                     new_post = Post(author, submission.subreddit.name, submission.id, {})
@@ -144,7 +140,7 @@ class RedditBot:
             pickle.dump(data, outfile)
 
 
-    def load_data(self, filename: str = None) -> None:
+    def load_data(self, filename: str = None) -> dict:
         """
         Loads data from a specified file.
         :param filename: The file name.
@@ -158,6 +154,7 @@ class RedditBot:
                     return pickle.load(infile)
             except FileNotFoundError:
                 print("no file.")
+        return None
 
     def dump_to_csv(self, file_name: str = None) -> None:
         """
@@ -185,18 +182,18 @@ class Post:
     """
     Class representing a post on Reddit.
     """
-    def __init__(self, author, subreddit, id, stats: dict) -> None:
+    def __init__(self, author, subreddit, reddit_id, stats: dict) -> None:
         """
         Initializes a Post class.
         :param author: Author of the post on Reddit.
         :param subreddit: The subreddit posted to.
-        :param id: The id of the post.
+        :param reddit_id: The id of the post.
         :param stats: additional post information as a dictionary object.
         """
         self.author = author
         self.subreddit = subreddit
-        self.id = id
-        self.stats = stats
+        self.id = reddit_id
+        self._stats = stats
 
 
 class Comment:
