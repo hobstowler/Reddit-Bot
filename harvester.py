@@ -19,22 +19,19 @@ class RedditBot:
         :param credentials_file: file containing credentials to connect to Reddit's API
         :param data_file: file containing data from previous runs.
         """
-        print(credentials_file)
+        self._credentials = {}
         self._users = {}
         self._posts = {}
         if credentials_file is None:
-            print("ok")
             credentials_file = "credentials\\credentials.txt"
         if data_file is None:
             data_file = 'data\\data.p'
         self._data_file = data_file
         self._credentials_file = credentials_file
-        self._credentials = {}
-        print(self._credentials)
 
         try:
             with open(self._credentials_file, 'r') as file:
-                print("found a floppy disk with a password on it...")
+                print("I found a floppy disk with a password on it. Let's see what's in here...")
                 self._credentials = json.load(file)
         except FileNotFoundError:
             print("No credentials found. Creating new file...")

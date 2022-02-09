@@ -46,6 +46,7 @@ class KeyWordAnalyzer(RedditBot):
             pickle.dump(self._keyword_lists, outfile)
 
     def create_keyword(self, keyword: str, keyword_type):
+        keyword = keyword.lower()
         if keyword_type not in self._keyword_lists:
             return
         if keyword_type in ['keyword', 'keyword_except']:
@@ -91,6 +92,12 @@ class KeyWordAnalyzer(RedditBot):
             print(word, end=", ")
         print()
 
+    def forget(self, keyword: str, keyword_type: str = 'keyword'):
+        if keyword in self._keyword_lists.get(keyword_type):
+            self._keyword_lists.get(keyword_type).remove(keyword)
+        else:
+            print("word not in list")
+
     def forget_everything(self, keyword_type: str = 'keyword'):
         self._keyword_lists.update({keyword_type: set()})
 
@@ -116,23 +123,23 @@ class KeyWordAnalyzer(RedditBot):
     def process_comments(self, strict: bool = False) -> None:
         print("processing")
         for post in self._posts.values():
-            print(type(post))
             comments = [comment.body for comment in post.get_comments().values()]
             for comment in comments:
                 # TODO clean up comments a bit
                 for word in comment.split():
+                    word = word.lower()
                     if word in self._words:
                         self._words.update({word: self._words.get(word) + 1})
                     elif word not in self._keyword_lists.get('keyword_except') and \
                             ((strict and word in self._keyword_lists.get('keyword')) or not strict):
-                        self._words.update({word: 1})
+                        self._words.update({word.lower(): 1})
 
     def spit_it_out(self):
         print("spitting", len(self._words), "words")
         sorted_words = sorted(self._words.items(), key=lambda x: x[1], reverse=True)
         for word in sorted_words:
             if word[1] > self._threshold:
-                print(word[0],":",word[1])
+                print(word[0],":",word[1], end=", ")
 
 
     def parse_comment(self, comment_text: str):
@@ -148,7 +155,7 @@ keybot = KeyWordAnalyzer()
 #keybot.save_data()
 #keybot.training_montage('keyword_except')
 #keybot.forget_everything()
-#keybot.regurgitate('keyword_except')
+keybot.regurgitate('keyword_except')
 #keybot.save_keyword_lists()
 keybot.process_comments()
 keybot.spit_it_out()
