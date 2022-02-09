@@ -5,7 +5,7 @@
 from platform import python_branch
 from os.path import exists
 import auth
-import praw, prawcore
+import praw, prawcore, praw.models
 import json
 import pickle
 
@@ -19,17 +19,22 @@ class RedditBot:
         :param credentials_file: file containing credentials to connect to Reddit's API
         :param data_file: file containing data from previous runs.
         """
+        print(credentials_file)
         self._users = {}
+        self._posts = {}
         if credentials_file is None:
+            print("ok")
             credentials_file = "credentials\\credentials.txt"
         if data_file is None:
             data_file = 'data\\data.p'
         self._data_file = data_file
         self._credentials_file = credentials_file
         self._credentials = {}
+        print(self._credentials)
 
         try:
             with open(self._credentials_file, 'r') as file:
+                print("found a floppy disk with a password on it...")
                 self._credentials = json.load(file)
         except FileNotFoundError:
             print("No credentials found. Creating new file...")
@@ -39,7 +44,8 @@ class RedditBot:
         try:
             self._data = self.load_data(self._data_file)
             if self._data is not None:
-                self._users = self._data.get('users')
+                self._users = self._data.get('users') if 'users' in self._data else {}
+                self._posts = self._data.get('posts') if 'posts' in self._data else {}
                 print("Loaded users.")
         except FileNotFoundError:
             print("No data file found. Creating new file...")
@@ -86,10 +92,12 @@ class RedditBot:
                   stickied: int = 0,
                   number: int = 100,
                   timeframe: str = 'hour',
-                  score: int = 100) -> list:
+                  score: int = 100,
+                  comment_sort: str = None) -> list:
         """
         Returns a post from Reddit. Optional parameters can be used to pull a specific post, stickied posts in a
         certain subreddit, or a specific number of posts.
+        :param score: The score of the post.
         :param timeframe: The time frame for submissions.
         :param subreddit_name: The name of the subreddit to pull a post from.
         :param post_url: The url of a specific post.
@@ -99,12 +107,17 @@ class RedditBot:
         """
         reddit = self.get_reddit('test getting posts by u/pytesterbot')
         posts = []
+
+        if comment_sort is None:
+            comment_sort = "top"
+
         if post_url is not None:
             posts.append(reddit.submission(url=post_url))
         elif subreddit_name != 'all' and stickied > 0:
             for i in range(1, stickied+1):
                 try:
                     post = reddit.subreddit(subreddit_name).sticky(i)
+                    post.comment_sort = comment_sort
                     if post not in posts:
                         posts.append(post)
                 except prawcore.NotFound:
@@ -115,7 +128,7 @@ class RedditBot:
                 if submission.score >= score:
                     author = submission.author.name
                     id = submission.author.id
-                    new_post = Post(author, submission.subreddit.name, submission.id, {})
+                    new_post = Post(submission)
 
                     if id not in self._users:
                         new_user = User(author, id)
@@ -136,7 +149,8 @@ class RedditBot:
             filename = self._data_file
         data = {
             'users': self._users,
-            'credentials': self._credentials
+            'credentials': self._credentials,
+            'posts': self._posts
             }
         with open(filename, 'wb') as outfile:
             pickle.dump(data, outfile)
@@ -184,7 +198,7 @@ class Post:
     """
     Class representing a post on Reddit.
     """
-    def __init__(self, author, subreddit, stats: dict) -> None:
+    def __init__(self, submission: praw.models.Submission) -> None:
         """
         Initializes a Post class.
         :param author: Author of the post on Reddit.
@@ -192,9 +206,11 @@ class Post:
         :param reddit_id: The id of the post.
         :param stats: additional post information as a dictionary object.
         """
-        self.author = author
-        self.subreddit = subreddit
-        self._stats = stats
+        self.author = submission.author.name
+        self.id = submission.id
+        self.name = submission.name
+        self.link = submission.permalink
+        self.subreddit = submission.subreddit.name
         self._comments = {}
 
     def get_comments(self) -> dict:
@@ -208,8 +224,10 @@ class Comment:
     """
     Class representing a comment on Reddit.
     """
-    def __init__(self) -> None:
-        pass
+    def __init__(self, comment: praw.models.Comment) -> None:
+        self.author = comment.author
+        self.id = comment.id
+        self.body = comment.body
 
 
 class User:
@@ -260,10 +278,15 @@ class User:
 def main():
     print("starting")
     py_bot = RedditBot()
-    py_bot.get_posts(subreddit_name='wallstreetbets')
-    py_bot.get_posts(subreddit_name='politics')
-    py_bot.save_data()
-    py_bot.dump_to_csv()
+    #py_bot.get_posts(subreddit_name='wallstreetbets')
+    #py_bot.get_posts(subreddit_name='politics')
+    #py_bot.save_data()
+    #py_bot.dump_to_csv()
+    reddit = py_bot.get_reddit("testing comments by u/pytesterbot")
+    subreddit = reddit.subreddit('depression')
+    submission = reddit.submission(id='5kgedk')
+    submission.comment_sort = 'best'
+    print("Top Comment Text: " + submission.comments[0].body)
 
 
 if __name__ == "__main__":
