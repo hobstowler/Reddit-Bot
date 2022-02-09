@@ -104,7 +104,9 @@ class RedditBot:
         elif subreddit_name != 'all' and stickied > 0:
             for i in range(1, stickied+1):
                 try:
-                    posts.append(reddit.subreddit(subreddit_name).sticky(i))
+                    post = reddit.subreddit(subreddit_name).sticky(i)
+                    if post not in posts:
+                        posts.append(post)
                 except prawcore.NotFound:
                     print("Could not find sticked post #", i)
         else:
@@ -182,7 +184,7 @@ class Post:
     """
     Class representing a post on Reddit.
     """
-    def __init__(self, author, subreddit, reddit_id, stats: dict) -> None:
+    def __init__(self, author, subreddit, stats: dict) -> None:
         """
         Initializes a Post class.
         :param author: Author of the post on Reddit.
@@ -192,8 +194,14 @@ class Post:
         """
         self.author = author
         self.subreddit = subreddit
-        self.id = reddit_id
         self._stats = stats
+        self._comments = {}
+
+    def get_comments(self) -> dict:
+        return self._comments
+
+    def get_stats(self) -> dict:
+        return self._stats
 
 
 class Comment:

@@ -1,6 +1,7 @@
 # Author: Hobs Towler
 # Date: 2/4/2022
 # Description:
+import praw.models
 
 from harvester import *
 import pickle
@@ -9,6 +10,7 @@ import pickle
 class KeyWordAnalyzer(RedditBot):
     def __init__(self) -> None:
         super().__init__()
+        self._posts = {}
         self.set_threshold(5)
         self._keyword_lists = self.load_keyword_lists()
         if self._keyword_lists is None:
@@ -73,11 +75,6 @@ class KeyWordAnalyzer(RedditBot):
 
 
     def set_threshold(self, new_threshold: int = 5):
-        """
-
-        :param new_threshold:
-        :return:
-        """
         self._threshold = new_threshold
 
     def train(self, keyword_type: str = 'keyword', word_list: list = None):
@@ -106,17 +103,30 @@ class KeyWordAnalyzer(RedditBot):
     def get_post_from_url(self, post_url: str):
         self.get_posts(post_url)
 
-    def get_stickied_posts_from_subreddit(self, subreddit: str, number: int = 2):
+    def get_stickied_posts_from_subreddit(self, subreddit: str, number: int = 3):
         posts = self.get_posts(subreddit_name='wallstreetbets', stickied=number)
         for post in posts:
-            print(post.title)
+            post_obj = None
+            if post.id not in self._posts:
+                post_obj = ParsedPost(post.author, post.subreddit, {})
+                self._posts.update({post.id: post_obj})
+            else:
+                post_obj = self._posts.get(post.id)
+
+            for comment in post.comments.list():
+                if not isinstance(comment, praw.models.MoreComments):
+                    print(comment.body)
 
     def parse_comment(self, comment_text: str):
         pass
+
+class ParsedPost(Post):
+    def __init__(self, author, subreddit, stats: dict):
+        super().__init__(author, subreddit, stats)
 
 keybot = KeyWordAnalyzer()
 #keybot.extract_comments_from_post('https://old.reddit.com/r/Virginia/comments/skdtww/glenn_youngkin_set_up_a_tip_line_to_snitch_on/')
 keybot.get_stickied_posts_from_subreddit('wallstreetbets')
 #keybot.training_montage()
-keybot.regurgitate()
+#keybot.regurgitate()
 #keybot.save_keywords()
