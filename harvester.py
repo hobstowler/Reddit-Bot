@@ -2,7 +2,6 @@
 # Date: 2/5/2022
 # Description:
 
-from platform import python_branch
 from os.path import exists
 import auth
 import praw, prawcore, praw.models

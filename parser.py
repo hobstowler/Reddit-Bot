@@ -1,13 +1,16 @@
 # Author: Hobs Towler
 # Date: 2/4/2022
 # Description:
-import praw.models
 
 from harvester import *
+import praw.models
 import pickle
 
 
 class KeyWordAnalyzer(RedditBot):
+    """
+    An extension of the RedditBot for analyzing keywords from posts and comments.
+    """
     def __init__(self) -> None:
         super().__init__()
         self._words = {}
@@ -38,14 +41,27 @@ class KeyWordAnalyzer(RedditBot):
         return None
 
     # TODO handle more intelligently
-    def save_keyword_lists(self, filename: str = None):
+    def save_keyword_lists(self, filename: str = None) -> None:
+        """
+        Saves the lists of keywords to file. Defaults to 'keyword data\keydata.p'
+        :param filename: The file name. Optional.
+        :return: Nothing.
+        """
         print("saving keywords lists")
         if filename is None:
             filename = "keyword data\\keydata.p"
         with open(filename, 'wb') as outfile:
             pickle.dump(self._keyword_lists, outfile)
 
-    def create_keyword(self, keyword: str, keyword_type):
+    # TODO rework how keywords are stored
+    def create_keyword(self, keyword: str, keyword_type) -> None:
+        """
+        Adds a keyword to the list of keywords/exceptions. If keyword is present as an exception or keyword already, it
+        is removed from that list to prevent conflict.
+        :param keyword: The keyword or exception to be added
+        :param keyword_type: The list name to which the keyword is to be added.
+        :return: Nothing.
+        """
         keyword = keyword.lower()
         if keyword_type not in self._keyword_lists:
             return
@@ -61,7 +77,6 @@ class KeyWordAnalyzer(RedditBot):
                 exception_list.remove(keyword)
             keyword_list.add(keyword)
         else:
-            print("exception")
             if keyword in keyword_list:
                 keyword_list.remove(keyword)
             exception_list.add(keyword)
