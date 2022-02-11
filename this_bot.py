@@ -22,7 +22,7 @@ class ThisBot(RedditBot):
             print(f"{post.subreddit} | {post.permalink}")
             post.comments.replace_more(threshold=5)
             for comment in post.comments.list():
-                if comment.body.split()[0].lower() == "this.":
+                if comment.body.split()[0].lower() in ["this.", "this!"]:
                     print(f"{comment.id} | {comment.score} | {comment.author.name}")
                     print(f"{comment.body}")
                     print("Reply: This! This right here!")
