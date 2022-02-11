@@ -12,7 +12,10 @@ class KeyWordAnalyzer(RedditBot):
     An extension of the RedditBot for analyzing keywords from posts and comments.
     """
     def __init__(self) -> None:
-        super().__init__()
+        """
+        Initializes the KeyWordAnalyzer
+        """
+        super().__init__(data_file=r"data\keyword_data.p")
         self._words = {}
         self.set_threshold(25)
         self._keyword_lists = self.load_keyword_lists()
@@ -81,8 +84,13 @@ class KeyWordAnalyzer(RedditBot):
                 keyword_list.remove(keyword)
             exception_list.add(keyword)
 
-
-    def set_threshold(self, new_threshold: int = 5):
+    # TODO implement thresholds
+    def set_threshold(self, new_threshold: int = 5) -> None:
+        """
+        Sets the threshold for which the occurrence of a keyword becomes significant.
+        :param new_threshold: The new threshold
+        :return: Nothing.
+        """
         self._threshold = new_threshold
 
     def train(self, keyword_type: str = 'keyword', word_list: list = None):

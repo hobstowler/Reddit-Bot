@@ -129,7 +129,6 @@ class RedditBot:
                     #    self._users.update({id: new_user})
                     #else:
                     #    self._users.get(id).add_post(new_post)
-        print(len(posts))
         return posts
 
     def save_data(self, filename: str = None) -> None:
@@ -164,6 +163,7 @@ class RedditBot:
                 print("no file.")
         return None
 
+    # TODO remove?
     def dump_to_csv(self, file_name: str = None) -> None:
         """
         Writes collected users and posts to a .csv file.
