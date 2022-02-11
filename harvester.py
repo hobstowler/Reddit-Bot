@@ -46,15 +46,11 @@ class RedditBot:
             print("No data file found. Creating new file...")
             open(self._data_file, 'w')
 
-    def refresh_credentials(self) -> None:
+    def prompt_credentials(self) -> None:
         """
-        To be used later. Will update credentials file if tokens change. Need to detect the change.
+        Prompts for new credentials and then retrieves a token.
         :return: Nothing.
         """
-        with open(self._credentials_file, 'w') as file:
-            json.dump(self._credentials, file)
-
-    def prompt_credentials(self):
         client_id = input("Enter a client ID:")
         client_secret = input("Enter client secret:")
         print("Launching web page to get token...")
@@ -62,13 +58,14 @@ class RedditBot:
         
     def refresh_auth_token(self, client_id, client_secret) -> None:
         """
-        Gets a new refresh token.
+        Gets a new token.
         :return: Nothing.
         """
         self._credentials.update({'client_id': client_id})
         self._credentials.update({'secret': client_secret})
         self._credentials.update({'refresh_token': auth.get_refresh_token(client_id, client_secret)})
-        self.refresh_credentials()
+        with open(self._credentials_file, 'w') as file:
+            json.dump(self._credentials, file)
 
     def get_reddit(self, agent_text: str) -> praw.Reddit:
         """
@@ -149,7 +146,6 @@ class RedditBot:
             }
         with open(filename, 'wb') as outfile:
             pickle.dump(data, outfile)
-
 
     def load_data(self, filename: str = None) -> dict:
         """
