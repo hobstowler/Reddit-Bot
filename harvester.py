@@ -8,11 +8,14 @@ import praw, prawcore, praw.models
 import json
 import pickle
 
+
 class RedditBot:
     """
     A generic reddit bot to pull posts and comments
     """
-    def __init__(self, credentials_file: str = None, data_file: str = None) -> None:
+    def __init__(self,
+                 credentials_file: str = r"credentials\credentials.txt",
+                 data_file: str = r'data\data.p') -> None:
         """
         Initializes the Reddit Bot.
         :param credentials_file: file containing credentials to connect to Reddit's API
@@ -21,10 +24,6 @@ class RedditBot:
         self._credentials = {}
         self._users = {}
         self._posts = {}
-        if credentials_file is None:
-            credentials_file = "credentials\\credentials.txt"
-        if data_file is None:
-            data_file = 'data\\data.p'
         self._data_file = data_file
         self._credentials_file = credentials_file
 
@@ -42,7 +41,7 @@ class RedditBot:
             if self._data is not None:
                 self._users = self._data.get('users') if 'users' in self._data else {}
                 self._posts = self._data.get('posts') if 'posts' in self._data else {}
-                print("Loaded users.")
+                print("Loaded data.")
         except FileNotFoundError:
             print("No data file found. Creating new file...")
             open(self._data_file, 'w')
