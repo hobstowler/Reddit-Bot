@@ -160,17 +160,24 @@ class KeyWordAnalyzer(RedditBot):
     def parse_comment(self, comment_text: str):
         pass
 
+
 class ParsedPost(Post):
     def __init__(self, post: praw.models.Submission):
         super().__init__(post)
 
-keybot = KeyWordAnalyzer()
-#keybot.extract_comments_from_post('https://old.reddit.com/r/Virginia/comments/skdtww/glenn_youngkin_set_up_a_tip_line_to_snitch_on/')
-#keybot.get_stickied_posts_from_subreddit('wallstreetbets')
-#keybot.save_data()
-#keybot.training_montage('keyword_except')
-#keybot.forget_everything()
-keybot.regurgitate('keyword_except')
-#keybot.save_keyword_lists()
-keybot.process_comments()
-keybot.spit_it_out()
+
+def main():
+    keybot = KeyWordAnalyzer()
+    #keybot.extract_comments_from_post('https://old.reddit.com/r/Virginia/comments/skdtww/glenn_youngkin_set_up_a_tip_line_to_snitch_on/')
+    #keybot.get_stickied_posts_from_subreddit('wallstreetbets')
+    #keybot.save_data()
+    #keybot.training_montage('keyword_except')
+    #keybot.forget_everything()
+    keybot.regurgitate('keyword_except')
+    #keybot.save_keyword_lists()
+    keybot.process_comments()
+    keybot.spit_it_out()
+
+
+if __name__ == "__main__":
+    main()

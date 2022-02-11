@@ -116,19 +116,20 @@ class RedditBot:
                     print("Could not find sticked post #", i)
         else:
             subreddit = reddit.subreddit(subreddit_name).top(timeframe, limit=number)
-            for submission in subreddit:
-                if submission.score >= score:
-                    author = submission.author.name
-                    id = submission.author.id
-                    new_post = Post(submission)
+            for post in subreddit:
+                if post.score >= score:
+                    posts.append(post)
+                    #author = submission.author.name
+                    #id = submission.author.id
+                    #new_post = Post(submission)
 
-                    if id not in self._users:
-                        new_user = User(author, id)
-                        new_user.add_post(new_post)
-                        self._users.update({id: new_user})
-                    else:
-                        self._users.get(id).add_post(new_post)
-        
+                    #if id not in self._users:
+                    #    new_user = User(author, id)
+                    #    new_user.add_post(new_post)
+                    #    self._users.update({id: new_user})
+                    #else:
+                    #    self._users.get(id).add_post(new_post)
+        print(len(posts))
         return posts
 
     def save_data(self, filename: str = None) -> None:
