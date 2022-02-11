@@ -3,7 +3,7 @@
 # Date: 2/11/2022
 # Description:
 
-from harvester import *
+from reddit_bot import *
 
 
 class ThisBot(RedditBot):

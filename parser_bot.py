@@ -2,7 +2,7 @@
 # Date: 2/4/2022
 # Description:
 
-from harvester import *
+from reddit_bot import *
 import praw.models
 import pickle
 
