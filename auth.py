@@ -11,13 +11,11 @@ import webbrowser
 
 def get_refresh_token(cid, secret, scopes=None):
     """
-    Gets a refresh token with provided client Id and Client Secret. Will launch web browser and read data from browser.
-    Args:
-        cid ([type]): Client ID
-        secret ([type]): Client Secret
-        scopes ([type], optional): Authorization scopes for instance of Reddit. If None/default, uses 'identity' and 'read' scopes.
 
-    Returns: None
+    :param cid:
+    :param secret:
+    :param scopes:
+    :return:
     """
     if scopes is None:
         scopes = ['identity','read']
@@ -70,6 +68,12 @@ def receive_connection():
     return client
 
 def send_message(client, message):
+    """
+    
+    :param client:
+    :param message:
+    :return:
+    """
     client.send(f"HTTP/1.1 200 OK\r\n\r\n{message}".encode('utf-8'))
     client.close()
     
