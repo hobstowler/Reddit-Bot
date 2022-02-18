@@ -2,7 +2,7 @@
 I started this project with the goal of tracking some of the top posts of the day and keeping tabs on users that consistently were able to break into those top posting spots. The idea being that this might be a way to identify, if not just power users, repost and karma farming bots and the like. However, the core of the project became a little bit more generic as a couple of ideas crystallized and the original bot became more of a generic platform upon which other ideas could be built.
 
 # Parser Bot
-This bot scans post comments and aggregates keywords above a certain threshold. The goal will be to eventually create output that can be integrated into a dashboard and track sentiment over time.
+This bot scans post comments and aggregates keywords above a certain threshold. A long term goal will be to create output that can be integrated into a dashboard and track sentiment over time.
 
 # "This!" Bot
 This bot scans the top Reddit posts of the day looking for any comments that begin with "This." Once the bot finds such a comment, it sarcastically prints out the reply to console "This! This right here!"
