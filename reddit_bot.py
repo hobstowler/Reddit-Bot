@@ -1,6 +1,6 @@
 # Author: Hobs Towler
 # Date: 2/5/2022
-# Description:
+# Description: An implementation of a reddit bot with class methods for accessing posts.
 
 from os.path import exists
 import auth
@@ -206,9 +206,17 @@ class Post:
         self._comments = {}
 
     def get_comments(self) -> dict:
+        """
+        Returns the comments in the post.
+        :return: The child comments.
+        """
         return self._comments
 
     def get_stats(self) -> dict:
+        """
+        Gets the post stats. Any misc info about the post.
+        :return: The post stats.
+        """
         return self._stats
 
 
